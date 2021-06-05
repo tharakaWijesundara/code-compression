@@ -1,21 +1,22 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <math.h>
 
-class functions
+struct entry
+{
+    unsigned int lineIndex;
+    unsigned int freq;
+    entry() : lineIndex(0), freq(0) {}
+};
+
+class compressFunctions
 {
 private:
     std::string *data;
     int no_of_lines;
 
 public:
-    struct entry
-    {
-        unsigned int lineIndex;
-        unsigned int freq;
-        entry() : lineIndex(0), freq(0) {}
-    };
-
     const int num_of_dic_elements = 16; //constant
 
     entry *freq_list; // no_of_lines
@@ -35,8 +36,9 @@ public:
     std::string bitmaskBased(std::string line);
 
     void compressFunction();
+    void writeToFile(std::string compressedString);
 
-    functions(std::string *data, int no_of_lines)
+    compressFunctions(std::string *data, int no_of_lines)
     {
         this->data = data;
         this->no_of_lines = no_of_lines;
@@ -44,7 +46,7 @@ public:
     }
 };
 
-std::string functions::decimalToBinary(int digits, int num)
+std::string compressFunctions::decimalToBinary(int digits, int num)
 {
     std::string decimal = "";
     int number = num;
@@ -56,7 +58,7 @@ std::string functions::decimalToBinary(int digits, int num)
     return decimal;
 }
 
-void functions::createFreqList()
+void compressFunctions::createFreqList()
 {
 
     for (int i = 0; i < no_of_lines; i++)
@@ -81,7 +83,7 @@ void functions::createFreqList()
     // std::cout << fourBitMisMatch("11010000111100001111001000100001") << std::endl;
 };
 
-void functions::updateFreqList(std::string line, int index)
+void compressFunctions::updateFreqList(std::string line, int index)
 {
     bool updated = false;
     for (int i = 0; i < no_of_lines; i++)
@@ -101,7 +103,7 @@ void functions::updateFreqList(std::string line, int index)
     }
 };
 
-void functions::sortFreqList()
+void compressFunctions::sortFreqList()
 {
     for (int i = 1; i < no_of_lines; i++)
     {
@@ -116,7 +118,7 @@ void functions::sortFreqList()
     }
 }
 
-std::string functions::directMatching(std::string line)
+std::string compressFunctions::directMatching(std::string line)
 {
     for (int i = 0; i < num_of_dic_elements; i++)
     {
@@ -128,7 +130,7 @@ std::string functions::directMatching(std::string line)
     return "F";
 }
 
-std::string functions::oneBitMisMatch(std::string line)
+std::string compressFunctions::oneBitMisMatch(std::string line)
 {
     for (int i = 0; i < num_of_dic_elements; i++)
     {
@@ -155,7 +157,7 @@ std::string functions::oneBitMisMatch(std::string line)
     return "F";
 }
 
-std::string functions::twoBitMisMatch(std::string line)
+std::string compressFunctions::twoBitMisMatch(std::string line)
 {
     for (int i = 0; i < num_of_dic_elements; i++)
     {
@@ -197,7 +199,7 @@ std::string functions::twoBitMisMatch(std::string line)
     return "F";
 }
 
-std::string functions::fourBitMisMatch(std::string line)
+std::string compressFunctions::fourBitMisMatch(std::string line)
 {
     for (int i = 0; i < num_of_dic_elements; i++)
     {
@@ -211,7 +213,8 @@ std::string functions::fourBitMisMatch(std::string line)
             {
                 if (mismatch_count < 4)
                 {
-                    if(mismatch_count==0){
+                    if (mismatch_count == 0)
+                    {
                         mismatch_index = j;
                     }
                     mismatch_found = true;
@@ -239,47 +242,7 @@ std::string functions::fourBitMisMatch(std::string line)
     return "F";
 }
 
-// std::string functions::twoAnyBitMisMatch(std::string line)
-// {
-//     for (int i = 0; i < num_of_dic_elements; i++)
-//     {
-//         std::string element = data[dictionary[i].lineIndex];
-//         int mismatch_count = 0;
-//         int location[2];
-//         int next_location = 0;
-//         int j = 0;
-//         while (j < element.length())
-//         {
-//             if ((element.substr(j, j + 1) != line.substr(j, j + 1)) &&
-//                 (element[j] != line[j]) &&
-//                 (element.substr(j, j + 1).length() > 1))
-//             {
-//                 mismatch_count++;
-//                 if (next_location < 2)
-//                 {
-//                     location[next_location] = j;
-//                 }
-//                 next_location++;
-//                 j += 2;
-//             }
-//             else
-//             {
-//                 j++;
-//             }
-//             if (mismatch_count > 2)
-//             {
-//                 break;
-//             }
-//         }
-//         if (mismatch_count == 2)
-//         {
-//             return "110" + decimalToBinary(5, location[0]) + decimalToBinary(5, location[1]) + decimalToBinary(4, i);
-//         }
-//     }
-//     return "F";
-// }
-
-std::string functions::twoAnyBitMisMatch(std::string line)
+std::string compressFunctions::twoAnyBitMisMatch(std::string line)
 {
     for (int i = 0; i < num_of_dic_elements; i++)
     {
@@ -314,7 +277,7 @@ std::string functions::twoAnyBitMisMatch(std::string line)
     return "F";
 }
 
-int *functions::checkDiffereceForMasking(std::string line, std::string dictEntry)
+int *compressFunctions::checkDiffereceForMasking(std::string line, std::string dictEntry)
 {
     int startLoc = -1;
     static int result[4];
@@ -345,7 +308,7 @@ int *functions::checkDiffereceForMasking(std::string line, std::string dictEntry
     return result;
 }
 
-std::string functions::bitmaskBased(std::string line)
+std::string compressFunctions::bitmaskBased(std::string line)
 {
     for (int i = 0; i < num_of_dic_elements; i++)
     {
@@ -367,11 +330,35 @@ std::string functions::bitmaskBased(std::string line)
     }
     return "F";
 }
+void compressFunctions::writeToFile(std::string compressedString){
 
-void functions::compressFunction()
+    std::ofstream cout("cout.txt");
+
+    std::string padZero = "";
+
+    for(int i=0;i<compressedString.length();i+=32){
+        if(compressedString.substr(i,32).length() < 32){
+            for(int j=0;j<32-compressedString.substr(i,32).length();j++){
+                padZero += "0";
+            }
+            cout << compressedString.substr(i,32) + padZero << std::endl;
+        }else{
+            cout << compressedString.substr(i,32) << std::endl;
+        }
+        
+    }
+    cout << "xxxx" << std::endl;
+    for(int i=0;i<num_of_dic_elements;i++){
+        cout << data[dictionary[i].lineIndex] << std::endl;
+    }
+
+    cout.close();
+}
+
+void compressFunctions::compressFunction()
 {
-    
-    std::string compressedBinary;
+
+    std::string compressedBinary = "";
 
     int runLenCount = 0;
     for (int i = 0; i < no_of_lines; i++)
@@ -394,7 +381,7 @@ void functions::compressFunction()
                 {
                     //append the conpressed one
                     compressedBinary += "001" + decimalToBinary(3, runLenCount - 1);
-                    std::cout << "001" + decimalToBinary(3, runLenCount - 1) << std::endl;
+                    // std::cout << "001" + decimalToBinary(3, runLenCount - 1) << std::endl;
                     runLenCount = 0;
                 }
             }
@@ -403,7 +390,7 @@ void functions::compressFunction()
                 if (runLenCount != 0)
                 {
                     compressedBinary += "001" + decimalToBinary(3, runLenCount - 1);
-                    std::cout << "001" + decimalToBinary(3, runLenCount - 1) << std::endl;
+                    // std::cout << "001" + decimalToBinary(3, runLenCount - 1) << std::endl;
                     runLenCount = 0;
                 }
             }
@@ -450,47 +437,278 @@ void functions::compressFunction()
         {
             // do the appending part
             compressedBinary += compressedBinaryLine;
-            std::cout << compressedBinaryLine << std::endl;
+            // std::cout << compressedBinaryLine << std::endl;
         }
         else
         {
             // append original binary
             compressedBinary += "000" + data[i];
-            std::cout << "000" + data[i] << std::endl;
+            // std::cout << "000" + data[i] << std::endl;
         }
     }
-    std::cout << compressedBinary;
+    // std::cout << compressedBinary;
+    writeToFile(compressedBinary);
 }
 
-int main()
+class decompressFunctions
+{
+private:
+    std::string *data;
+    std::string compressedString;
+
+    const int num_of_dic_elements = 16; //constant
+    entry *dictionary;
+
+public:
+    decompressFunctions(entry *dictionary, std::string *data, std::string compressedString)
+    {
+        this->dictionary = dictionary;
+        this->data = data;
+        this->compressedString = compressedString;
+    }
+    int binaryToDecimal(std::string binary);
+    std::string directMatchingDecompress(std::string line);
+    std::string oneBitMismatchDecompress(std::string line);
+    std::string twoBitConsecutiveMismatchDecompress(std::string line);
+    std::string fourBitConsecutiveMismatchDecompress(std::string line);
+    std::string twoBitAnywhereMismatchDecompress(std::string line);
+    std::string bitmaskDecompress(std::string line);
+    bool checkAllCharAreZero(std::string line);
+
+    void decompressFunction();
+    void writeToFile(std::string decompressedString);
+};
+
+int decompressFunctions::binaryToDecimal(std::string binary)
+{
+    int value = 0;
+    for (int i = binary.length() - 1; i >= 0; i--)
+    {
+        value += (binary.at(i) - '0') * (pow(2, (binary.length() - 1 - i)));
+    }
+    return value;
+}
+
+std::string decompressFunctions::directMatchingDecompress(std::string line)
+{
+    return data[dictionary[binaryToDecimal(line.substr(3, 4))].lineIndex];
+}
+
+std::string decompressFunctions::oneBitMismatchDecompress(std::string line)
+{
+    int bitLocation = binaryToDecimal(line.substr(3, 5));
+    int dicIndex = binaryToDecimal(line.substr(8, 4));
+    std::string dicLine = data[dictionary[dicIndex].lineIndex];
+
+    dicLine[bitLocation] == '0' ? dicLine[bitLocation] = '1' : dicLine[bitLocation] = '0';
+    // std::cout << dicLine <<std::endl;
+    return dicLine;
+}
+std::string decompressFunctions::twoBitConsecutiveMismatchDecompress(std::string line)
+{
+    int startLocation = binaryToDecimal(line.substr(3, 5));
+    int dicIndex = binaryToDecimal(line.substr(8, 4));
+    std::string dicLine = data[dictionary[dicIndex].lineIndex];
+
+    for (int i = 0; i < 2; i++)
+    {
+        dicLine[startLocation + i] == '0' ? dicLine[startLocation + i] = '1' : dicLine[startLocation + i] = '0';
+    }
+
+    // std::cout << dicLine <<std::endl;
+    return dicLine;
+}
+std::string decompressFunctions::fourBitConsecutiveMismatchDecompress(std::string line)
+{
+    int startLocation = binaryToDecimal(line.substr(3, 5));
+    int dicIndex = binaryToDecimal(line.substr(8, 4));
+    std::string dicLine = data[dictionary[dicIndex].lineIndex];
+
+    for (int i = 0; i < 4; i++)
+    {
+        dicLine[startLocation + i] == '0' ? dicLine[startLocation + i] = '1' : dicLine[startLocation + i] = '0';
+    }
+
+    // std::cout << dicLine <<std::endl;
+    return dicLine;
+}
+
+std::string decompressFunctions::twoBitAnywhereMismatchDecompress(std::string line)
+{
+    int firstLocation = binaryToDecimal(line.substr(3, 5));
+    int secondLocation = binaryToDecimal(line.substr(8, 5));
+    int dicIndex = binaryToDecimal(line.substr(13, 4));
+    std::string dicLine = data[dictionary[dicIndex].lineIndex];
+
+    dicLine[firstLocation] == '0' ? dicLine[firstLocation] = '1' : dicLine[firstLocation] = '0';
+    dicLine[secondLocation] == '0' ? dicLine[secondLocation] = '1' : dicLine[secondLocation] = '0';
+
+    // std::cout << dicLine <<std::endl;
+    return dicLine;
+}
+
+std::string decompressFunctions::bitmaskDecompress(std::string line)
+{
+    int startLocation = binaryToDecimal(line.substr(3, 5));
+    std::string mask = line.substr(8, 4);
+    int dicIndex = binaryToDecimal(line.substr(12, 4));
+    std::string dicLine = data[dictionary[dicIndex].lineIndex];
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (mask[i] == '1')
+        {
+            dicLine[startLocation + i] == '0' ? dicLine[startLocation + i] = '1' : dicLine[startLocation + i] = '0';
+        }
+    }
+    // std::cout << dicLine <<std::endl;
+    return dicLine;
+}
+
+bool decompressFunctions::checkAllCharAreZero(std::string line)
+{
+    int n = line.length();
+    for (int i = 0; i < n; i++)
+        if (line[i] != '0')
+            return false;
+
+    return true;
+}
+
+void decompressFunctions::writeToFile(std::string decompressedString){
+
+    std::ofstream dout("dout.txt");
+
+    for(int i=0;i<decompressedString.length();i+=32){
+        dout << decompressedString.substr(i,32) << std::endl;
+    }
+
+    dout.close();
+}
+
+void decompressFunctions::decompressFunction()
+{
+    int j = 0;
+    std::string decompressedString = "";
+    std::string lastDecompressedLine = "";
+
+    while (true)
+    {
+        if (0 < compressedString.length() - j <= 32)
+        {
+            if (checkAllCharAreZero(compressedString.substr(j, compressedString.length() - j)))
+            {
+                break;
+            }
+        }
+        else if (compressedString.length() - j == 0)
+        {
+            break;
+        }
+        int index = binaryToDecimal(compressedString.substr(j, 3));
+        int noOfTimes = 0;
+        switch (index)
+        {
+        case 0:
+            lastDecompressedLine = compressedString.substr(j + 3, 32);
+            decompressedString += lastDecompressedLine;
+            j = j + 35;
+            break;
+        case 1:
+            noOfTimes = binaryToDecimal(compressedString.substr(j + 3, 3)) + 1;
+            for (int k = 0; k < noOfTimes; k++)
+            {
+                decompressedString += lastDecompressedLine;
+            }
+            j = j + 6;
+            break;
+        case 2:
+            lastDecompressedLine = bitmaskDecompress(compressedString.substr(j, 16));
+            decompressedString += lastDecompressedLine;
+            j = j + 16;
+            break;
+        case 3:
+            lastDecompressedLine = oneBitMismatchDecompress(compressedString.substr(j, 12));
+            decompressedString += lastDecompressedLine;
+            j = j + 12;
+            break;
+        case 4:
+            lastDecompressedLine = twoBitConsecutiveMismatchDecompress(compressedString.substr(j, 12));
+            decompressedString += lastDecompressedLine;
+            j = j + 12;
+            break;
+        case 5:
+            lastDecompressedLine = fourBitConsecutiveMismatchDecompress(compressedString.substr(j, 12));
+            decompressedString += lastDecompressedLine;
+            j = j + 12;
+            break;
+        case 6:
+            lastDecompressedLine = twoBitAnywhereMismatchDecompress(compressedString.substr(j, 17));
+            decompressedString += lastDecompressedLine;
+            j = j + 17;
+            break;
+        case 7:
+            lastDecompressedLine = directMatchingDecompress(compressedString.substr(j, 7));
+            decompressedString += lastDecompressedLine;
+            j = j + 7;
+            break;
+        default:
+            break;
+        }
+    }
+    writeToFile(decompressedString);
+    // std::cout << decompressedString << std::endl;
+}
+
+int main(int argc, char* argv[])
 {
     int no_of_lines = 0;
     // defining the file
     std::string line;
-    std::ifstream myfile("original.txt");
+    std::ifstream originalFile("original.txt");
 
     // read number of lines
-    while (getline(myfile, line))
+    while (getline(originalFile, line))
     {
         no_of_lines++;
     }
-    myfile.clear();
-    myfile.seekg(0, std::ios::beg);
+    originalFile.clear();
+    originalFile.seekg(0, std::ios::beg);
 
     // dynamic array to store
     std::string *dic = new std::string[no_of_lines];
     int count = 0;
 
     // storing line by line
-    while (getline(myfile, dic[count]))
-    {
-        count++;
+    for(int i=0;i<no_of_lines;i++){
+        getline(originalFile, dic[i]);
     }
-    // std::cout << no_of_lines << std::endl;
 
-    functions a(dic, no_of_lines);
-    a.createFreqList();
-    a.compressFunction();
+    compressFunctions comFun(dic, no_of_lines);
+    comFun.createFreqList();
 
+    if (argv[1][0] == '1'){
+        comFun.compressFunction();
+    }
+    
+    std::string compressedString = "";
+    std::string compressedLine;
+    std::ifstream compressedFile("compressed.txt");
+
+    while (getline(compressedFile, compressedLine))
+    {
+        if (compressedLine == "xxxx")
+        {
+            break;
+        }
+        compressedString += compressedLine;
+    }
+
+    decompressFunctions decomFun(comFun.dictionary, dic, compressedString);
+    
+    if (argv[1][0] == '2'){
+        decomFun.decompressFunction();
+    }
+    
     return 0;
 }
